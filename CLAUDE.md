@@ -152,8 +152,8 @@ The engine's `hotkeys.filter` is set to always return true. Each registered bind
 ### Sequence prefix is consumed even on no match
 When the user presses `g` (a registered sequence prefix), our SequenceDispatcher always `preventDefault`s + `stopPropagation`s and enters waiting state. If the second key doesn't match a known sequence, we drop out of waiting state and let the second key flow through normally. The `g` itself is not delivered to anyone. This means typing the literal letter `g` in a non-editable focus context is "lost" — not a real concern in practice because non-editable focus targets don't accept text input anyway.
 
-### Compose-scope `Esc` doesn't differentiate sub-modals
-The `compose.close` binding is scoped `["composing"]` with `allowsEditableTarget=true`, so Esc fires it from any element inside the composer — including the URL input of the link-insert modal that `Ctrl+K` opens. Pressing Esc to dismiss the link modal closes the **whole composer** instead. Pre-existing; not a regression. Polish item if v2 wants modal-aware compose scope. Surfaced during Chrome MCP test run.
+### Compose-scope shortcuts defer to open sub-modals
+`compose.close` (Esc), `compose.send` (Ctrl+Enter), and `compose.insertLink` (Ctrl+K) all carry `canFire: () => !selectors.isModalOpen()`. When a Proton modal (e.g. the Insert Link dialog) is open, the action's `canFire` returns false, the engine doesn't `preventDefault` the keystroke, and Esc / Ctrl+Enter / Ctrl+K reach Proton's modal handler instead — closing the modal, not the whole composer. The Action.canFire surface in `registry.ts` is the general-purpose hook for this kind of conditional gating; reach for it any time you need an action to bow out without consuming the key. Modal detection uses `.modal-two-backdrop--in` (Proton's ModalTwo visible class) — note that `.modal-two-backdrop` (without `--in`) lingers in the DOM after the modal closes, so don't match the bare wrapper.
 
 ## Manifest / permissions tricks
 

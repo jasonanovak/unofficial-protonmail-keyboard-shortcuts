@@ -195,7 +195,7 @@ mcp__firefox-devtools__click_by_uid({ uid: "<rooster-iframe-uid>" })
 
 Send and insert-link rely on Proton's `useBubbleIframeEvents` re-dispatching iframe keystrokes onto the parent document (see CLAUDE.md "Rooster compose iframe"). If the post-snapshot assertion fails, suspect that bubble path before suspecting the binding — verify by looking at console for `[upmks] dispatch compose.send`.
 
-**Quirk to know about:** in compose scope, `Escape` is `compose.close` regardless of focus context. If a sub-modal is open inside the composer (e.g., the link-insert modal C3 spawns), pressing Esc closes the **whole composer**, not just the modal — our binding fires before Proton's modal handler. Run C3 → C2 → C1 in that order, or open a fresh composer between sub-modal tests, to avoid the chain consuming the Esc you wanted for the modal. See CLAUDE.md "Engine semantics worth knowing".
+**Sub-modal interaction:** when a Proton sub-modal is open inside the composer (e.g., the Insert Link dialog C3 spawns), the compose-scope shortcuts (Esc, Ctrl+Enter, Ctrl+K) all bow out via `canFire: () => !isModalOpen()` — the keystroke reaches Proton's modal handler instead. So C3 → Esc closes the **link modal only**, then a second Esc closes the composer. See CLAUDE.md "Compose-scope shortcuts defer to open sub-modals" for the mechanism.
 
 ### Edge cases / regressions
 
