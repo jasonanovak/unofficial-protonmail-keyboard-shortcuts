@@ -8,6 +8,7 @@ The executable counterpart of `TEST_MATRIX.md`. Uses the `firefox-devtools` MCP 
 
 - `dist/firefox/` exists. Run `npm run build` if not.
 - Firefox is running with the MCP server attached. Verify with `mcp__firefox-devtools__get_firefox_info`.
+- **The MCP server must be the [`inputsimulation` fork](https://github.com/jasonanovak/firefox-devtools-mcp/tree/inputsimulation) of `firefox-devtools-mcp`.** Upstream `firefox-devtools-mcp` does not expose `press_key`, which the entire plan depends on. If `mcp__firefox-devtools__press_key` is missing from the available tool list, you have the wrong MCP server.
 - A Proton Mail test account is signed in **and** native shortcuts have been disabled (Settings → General → Keyboard shortcuts). Decision #2 in `DESIGN.md` is "natives are off"; leaving them on causes double-fire and the matrix is meaningless.
 - Inbox has at least 3 messages, including at least one **unread** message and at least one already **starred** message. Some assertions need both states.
 - Manual sign-in has happened once in the profile this MCP session uses, so storage persists across runs (CAPTCHA / 2FA make scripted auth brittle).
