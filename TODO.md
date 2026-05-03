@@ -41,11 +41,11 @@ Exit criteria: all PRD CUJs satisfied with default bindings.
 
 Closes the "click first, then shortcut works" gap surfaced in the Phase 3 test matrix. Proton's toolbar Mark-as-read/unread/move-to-X buttons only render when messages are selected; without keyboard nav + selection, list-scope shortcuts are workflow-blocked behind a mouse click. Exit criteria: every list-scope row in `TEST_MATRIX.md` is fully Pass without the mouse.
 
-- [ ] **Find per-row message-list selectors.** Locate the data-testid (or stable selector) for individual list rows AND for the row-level select checkbox. WebClients source paths will narrow it. Output goes into `selectors.ts`.
-- [ ] **Implement focused-row tracking in list scope.** Track which row is currently "focused" without depending on Proton's internal state. Auto-focus the first row when scope enters `list` so the workflow doesn't require a click. State lives in the content script (parent frame only).
-- [ ] **Add list-nav actions — focusNext / focusPrev.** Bound to `down` / `up`. Move browser focus to the next/previous row using the tracker, `scrollIntoView` on transition. No message opens.
-- [ ] **Add list selection actions — toggleSelect, openFocused.** `x` (or `space`) toggles the focused row's checkbox; `enter` opens the focused row in reading view. Once these work, the existing list-scope toolbar shortcuts are reachable purely from the keyboard.
-- [ ] **Re-verify list scope test matrix.** Walk every list-scope row in `TEST_MATRIX.md` without using the mouse — all should now Pass.
+- [x] **Find per-row message-list selectors.** Locate the data-testid (or stable selector) for individual list rows AND for the row-level select checkbox. WebClients source paths will narrow it. Output goes into `selectors.ts`.
+- [x] **Implement focused-row tracking in list scope.** Track which row is currently "focused" without depending on Proton's internal state. Auto-focus the first row when scope enters `list` so the workflow doesn't require a click. State lives in the content script (parent frame only).
+- [x] **Add list-nav actions — focusNext / focusPrev.** Bound to `down` / `up`. Move browser focus to the next/previous row using the tracker, `scrollIntoView` on transition. No message opens.
+- [x] **Add list selection actions — toggleSelect, openFocused.** `x` (or `space`) toggles the focused row's checkbox; `enter` opens the focused row in reading view. Once these work, the existing list-scope toolbar shortcuts are reachable purely from the keyboard.
+- [x] **Re-verify list scope test matrix.** Walk every list-scope row in `TEST_MATRIX.md` without using the mouse — all should now Pass.
 
 ## Phase 4 — Customization
 

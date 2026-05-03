@@ -39,6 +39,35 @@ function clickOrWarn(actionId: string, el: HTMLElement | null): void {
   }
 }
 
+// Phase 3.5: keyboard-driven row navigation and selection. The "focused"
+// row is whatever row natively has browser focus (Proton rows are
+// tabindex=0 + role="region"); when nothing has focus, fall back to the
+// first row. Nav actions only refocus — they don't open the message.
+
+function focusedOrFirstRow(): HTMLElement | null {
+  return selectors.focusedListRow() ?? selectors.listRows()[0] ?? null;
+}
+
+function focusListRowDelta(actionId: string, delta: number): void {
+  const rows = selectors.listRows();
+  if (rows.length === 0) {
+    console.warn(LOG_PREFIX, actionId, "no rows in list");
+    return;
+  }
+  const current = selectors.focusedListRow();
+  let nextIdx: number;
+  if (current) {
+    const idx = rows.indexOf(current);
+    nextIdx = Math.max(0, Math.min(rows.length - 1, idx + delta));
+  } else {
+    nextIdx = delta > 0 ? 0 : rows.length - 1;
+  }
+  const target = rows[nextIdx];
+  if (!target) return;
+  target.focus();
+  target.scrollIntoView({ block: "nearest" });
+}
+
 // Folder navigation goes through URL assignment, not sidebar clicks. Proton
 // collapses Archive / Spam / Trash / All Mail behind a "More" toggle when
 // folder lists get long, so the sidebar links aren't always present in the
@@ -108,6 +137,48 @@ export const ALL_ACTIONS: Action[] = [
     scopes: ["list"],
     defaultBinding: "command+a, ctrl+a",
     run: ({ actionId }) => clickOrWarn(actionId, selectors.selectAllCheckbox()),
+  },
+  {
+    id: "list.focusNext",
+    label: "Focus next message",
+    scopes: ["list"],
+    defaultBinding: "down",
+    run: ({ actionId }) => focusListRowDelta(actionId, +1),
+  },
+  {
+    id: "list.focusPrev",
+    label: "Focus previous message",
+    scopes: ["list"],
+    defaultBinding: "up",
+    run: ({ actionId }) => focusListRowDelta(actionId, -1),
+  },
+  {
+    id: "list.toggleSelect",
+    label: "Toggle message selection",
+    scopes: ["list"],
+    defaultBinding: "x",
+    run: ({ actionId }) => {
+      const row = focusedOrFirstRow();
+      if (!row) {
+        console.warn(LOG_PREFIX, actionId, "no rows to select");
+        return;
+      }
+      clickOrWarn(actionId, selectors.rowCheckbox(row));
+    },
+  },
+  {
+    id: "list.openFocused",
+    label: "Open focused message",
+    scopes: ["list"],
+    defaultBinding: "enter",
+    run: ({ actionId }) => {
+      const row = focusedOrFirstRow();
+      if (!row) {
+        console.warn(LOG_PREFIX, actionId, "no rows to open");
+        return;
+      }
+      row.click();
+    },
   },
 
   // ── Reading view ────────────────────────────────────────────────────────
@@ -189,7 +260,19 @@ export const ALL_ACTIONS: Action[] = [
     scopes: ["list", "reading"],
     // See note on goto.starred: `*` is hotkeys-js's wildcard, so bind the chord.
     defaultBinding: "shift+8",
-    run: ({ actionId }) => clickOrWarn(actionId, selectors.starButton()),
+    run: ({ actionId }) => {
+      // Prefer the row-level star of the currently-focused row. Falls back
+      // to the message-view star icon (reading scope, no list focus).
+      const focused = selectors.focusedListRow();
+      if (focused) {
+        const star = selectors.rowStar(focused);
+        if (star) {
+          star.click();
+          return;
+        }
+      }
+      clickOrWarn(actionId, selectors.starButton());
+    },
   },
 
   // ── Composing ───────────────────────────────────────────────────────────

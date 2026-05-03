@@ -158,6 +158,46 @@ export const editorInsertLinkButton = (): HTMLElement | null =>
   query('[data-testid="editor-insert-link"]') ??
   findByAriaLabel(/insert link/i);
 
+// ─── Message list rows (Phase 3.5) ─
+// Rows are <div role="region" tabindex="0"> with data-element-id; the
+// row-level checkbox lives inside via data-testid="item-checkbox" and is
+// matched to its row by data-item-id === parent's data-element-id.
+
+const ROW_SELECTOR =
+  'div[data-shortcut-target="item-container"][data-element-id]';
+const ROW_CHECKBOX_SELECTOR = 'input[data-testid="item-checkbox"]';
+
+export function listRows(): HTMLElement[] {
+  for (const doc of candidateDocuments()) {
+    const els = doc.querySelectorAll<HTMLElement>(ROW_SELECTOR);
+    if (els.length > 0) return Array.from(els);
+  }
+  return [];
+}
+
+export function focusedListRow(): HTMLElement | null {
+  // Proton uses native :focus / document.activeElement on rows — see
+  // CLAUDE.md "Star icons are per-row" and the Phase 3.5 work in TODO.md.
+  for (const doc of candidateDocuments()) {
+    const active = doc.activeElement;
+    if (active instanceof HTMLElement) {
+      const row = active.closest<HTMLElement>(ROW_SELECTOR);
+      if (row) return row;
+    }
+  }
+  return null;
+}
+
+export function rowCheckbox(row: HTMLElement): HTMLElement | null {
+  return row.querySelector<HTMLElement>(ROW_CHECKBOX_SELECTOR);
+}
+
+export function rowStar(row: HTMLElement): HTMLElement | null {
+  return row.querySelector<HTMLElement>(
+    '[data-testid="item-star-true"], [data-testid="item-star-false"]',
+  );
+}
+
 // ─── Sidebar / folder navigation ─
 
 const sidebarLink = (...humanIds: string[]) => (): HTMLElement | null => {
@@ -184,6 +224,10 @@ export const starredLink = sidebarLink("starred");
 export const allMailLink = sidebarLink("almost-all-mail", "all-mail");
 
 export const selectors = {
+  listRows,
+  focusedListRow,
+  rowCheckbox,
+  rowStar,
   composeButton,
   replyButton,
   replyAllButton,
