@@ -61,7 +61,7 @@ Exit criteria: user can rebind any action and have it take effect without reload
 
 Exit criteria: both browsers verified end-to-end, listing copy reviewed for the branding rule, store listings live (or ready to submit).
 
-- [ ] **Verify Firefox parity end-to-end.** Walk the full action list manually against the Firefox build on a real account. Catches any `browser.*` polyfill edge cases or manifest-template gaps that the Phase-3 MCP run didn't exercise.
+- [ ] **Verify cross-browser parity end-to-end (human acceptance).** Both Firefox and Chrome have been MCP-verified through `TEST_PLAN.md`. This task is the human pass: ~30 min of actual email work in each browser on a real Proton account. Exercise destructive rows the MCP runs avoided (`t` / `s` / `a` / `i` moving real messages, `*` toggling stars) and real-world workflows the matrix doesn't capture (compose with attachments, multi-tab interactions, long-lived sessions, long lists with scrolling). Last gate before submitting to stores.
 - [ ] **Prepare store listing (icons, screenshots, copy review).** Generate icon set at sizes required by Chrome Web Store and AMO. Capture Options-page and shortcut-in-action screenshots. Write the listing description; review for the PRD branding rule that no copy implies the extension is official. Restore the full "Unofficial Proton Mail Keyboard Shortcuts Extension" name in store listings (manifest is shortened to fit AMO's 45-char cap). Add `browser_specific_settings.gecko.data_collection_permissions` to the Firefox manifest (web-ext lint flags it as a future-required key).
 
 ## Phase 6 — Test + CI
