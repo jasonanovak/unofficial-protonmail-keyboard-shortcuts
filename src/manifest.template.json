@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Unofficial Proton Mail Keyboard Shortcuts",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Customizable, view-consistent keyboard shortcuts for the Proton Mail web client. Unofficial — not affiliated with Proton AG.",
   "permissions": ["storage"],
   "host_permissions": ["https://mail.proton.me/*"],
