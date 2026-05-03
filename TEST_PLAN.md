@@ -1,36 +1,64 @@
 # Automated Test Plan
 
-The executable counterpart of `TEST_MATRIX.md`. Uses the `firefox-devtools` MCP server to drive a real Firefox session and verify outcomes by **comparing DOM snapshots before and after each shortcut**. Console logs are diagnostic only — they're useful when a test fails to figure out *why*, but the pass/fail signal is always observable user-facing state.
+The executable counterpart of `TEST_MATRIX.md`. Uses either the `firefox-devtools` MCP server (Firefox) or the `chrome-devtools` MCP server (Chrome) to drive a real browser session, and verifies outcomes by **comparing DOM snapshots before and after each shortcut**. Console logs are diagnostic only — they're useful when a test fails to figure out *why*, but the pass/fail signal is always observable user-facing state.
 
 `TEST_MATRIX.md` remains the human checklist. This plan is what a session runs when the goal is "do a verification pass with keystrokes but without requiring a human to press them."
 
 ## Preconditions
 
-- `dist/firefox/` exists. Run `npm run build` if not.
-- Firefox is running with the MCP server attached. Verify with `mcp__firefox-devtools__get_firefox_info`.
-- **The MCP server must be the [`inputsimulation` fork](https://github.com/jasonanovak/firefox-devtools-mcp/tree/inputsimulation) of `firefox-devtools-mcp`.** Upstream `firefox-devtools-mcp` does not expose `press_key`, which the entire plan depends on. If `mcp__firefox-devtools__press_key` is missing from the available tool list, you have the wrong MCP server.
+Common to both browsers:
+
+- `dist/firefox/` (or `dist/chrome/`) exists. Run `npm run build` if not.
 - A Proton Mail test account is signed in **and** native shortcuts have been disabled (Settings → General → Keyboard shortcuts). Decision #2 in `DESIGN.md` is "natives are off"; leaving them on causes double-fire and the matrix is meaningless.
 - Inbox has at least 3 messages, including at least one **unread** message and at least one already **starred** message. Some assertions need both states.
-- Manual sign-in has happened once in the profile this MCP session uses, so storage persists across runs (CAPTCHA / 2FA make scripted auth brittle).
+
+Browser-specific:
+
+**Firefox path.** Run with the [`inputsimulation` fork of firefox-devtools-mcp](https://github.com/jasonanovak/firefox-devtools-mcp/tree/inputsimulation). Upstream `firefox-devtools-mcp` does not expose `press_key`, which the entire plan depends on. If `mcp__firefox-devtools__press_key` is missing from the available tool list, you have the wrong MCP server. The Firefox MCP reuses its temp profile across reconnects, so a one-time manual sign-in persists.
+
+**Chrome path.** Run with `chrome-devtools-mcp` started with `--categoryExtensions` (default-disabled). In `~/.claude.json`, the args entry should be:
+```json
+"args": ["chrome-devtools-mcp@latest", "--categoryExtensions"]
+```
+The Chrome MCP launches a fresh user-data-dir on each connect by default, so you'll need to sign into Proton manually each session. To make sign-in stick across sessions, pass `--userDataDir=<absolute-path>` so the profile persists; reuse the same path on subsequent runs.
+
+## Modifier-key syntax differs between MCPs
+
+The single biggest copy-paste hazard. Same shortcut, different `press_key` payload:
+
+| Action | Firefox MCP | Chrome MCP |
+|--------|-------------|------------|
+| Mark all (Ctrl+A) | `"ctrl+a"` | `"Control+A"` |
+| Reply all (Shift+R) | `"shift+r"` | `"Shift+R"` |
+| Send (Cmd+Enter) | `"command+enter"` | `"Meta+Enter"` |
+| Star (Shift+8) | `"shift+8"` | `"Shift+8"` |
+| Folder nav (g i) | `"g"` then `"i"` | `"g"` then `"i"` |
+
+Firefox MCP follows hotkeys-js syntax (lowercase, `command`/`ctrl`/`alt`/`shift`). Chrome MCP follows DevTools convention (capitalized, `Control`/`Shift`/`Alt`/`Meta`). Letter and digit keys are unchanged.
 
 ## One-time setup per session
 
+**Firefox:**
 ```
-# 1. Install the unpacked extension. `path` must be absolute; resolve from
-# the repo root: <repo>/dist/firefox
 mcp__firefox-devtools__install_extension({
   type: "path",
   path: "<absolute-path-to-repo>/dist/firefox"
 })
-
-# 2. Open Proton Mail at the inbox so list scope is the starting state
 mcp__firefox-devtools__navigate_page({ url: "https://mail.proton.me/u/0/inbox" })
-
-# 3. Confirm the page is at the inbox (URL via list_pages, DOM via snapshot)
-mcp__firefox-devtools__list_pages()
-# expect the selected tab's url to end in /u/0/inbox
+mcp__firefox-devtools__list_pages()                              # confirm URL
 mcp__firefox-devtools__take_snapshot({ selector: "section[aria-label='Message list']" })
-# expect at least 3 message rows
+```
+
+**Chrome:**
+```
+mcp__chrome-devtools__install_extension({
+  path: "<absolute-path-to-repo>/dist/chrome"
+})
+mcp__chrome-devtools__list_extensions()                          # confirm install
+mcp__chrome-devtools__navigate_page({ type: "url", url: "https://mail.proton.me/u/0/inbox" })
+# If redirected to account.proton.me/mail, sign in manually in the MCP browser.
+mcp__chrome-devtools__list_pages()                               # confirm URL
+mcp__chrome-devtools__take_snapshot()
 ```
 
 If the snapshot is empty or the URL is wrong, fix before continuing.
@@ -167,6 +195,8 @@ mcp__firefox-devtools__click_by_uid({ uid: "<rooster-iframe-uid>" })
 
 Send and insert-link rely on Proton's `useBubbleIframeEvents` re-dispatching iframe keystrokes onto the parent document (see CLAUDE.md "Rooster compose iframe"). If the post-snapshot assertion fails, suspect that bubble path before suspecting the binding — verify by looking at console for `[upmks] dispatch compose.send`.
 
+**Quirk to know about:** in compose scope, `Escape` is `compose.close` regardless of focus context. If a sub-modal is open inside the composer (e.g., the link-insert modal C3 spawns), pressing Esc closes the **whole composer**, not just the modal — our binding fires before Proton's modal handler. Run C3 → C2 → C1 in that order, or open a fresh composer between sub-modal tests, to avoid the chain consuming the Esc you wanted for the modal. See CLAUDE.md "Engine semantics worth knowing".
+
 ### Edge cases / regressions
 
 These tests verify shortcuts **don't fire** in editable contexts. The assertion is "pre and post snapshots are equivalent" — i.e., the keystroke produced ordinary input, not a dispatch.
@@ -196,7 +226,16 @@ The screenshot is for the run record.
 When an assertion fails, **then** look at the console — that's where the design's signals live:
 
 ```
+# Firefox MCP
 mcp__firefox-devtools__list_console_messages({ textContains: "[upmks]", limit: 30 })
+
+# Chrome MCP — note: defaults to "since last navigation"; pass
+# includePreservedMessages to see boot logs after navigation.
+mcp__chrome-devtools__list_console_messages({
+  includePreservedMessages: true,
+  pageSize: 30,
+  types: ["debug", "info", "warn"]
+})
 ```
 
 What to look for:
@@ -207,8 +246,7 @@ What to look for:
 ## Known limitations
 
 - **Selector drift in destructive tests.** Tests that mutate state (move to trash/spam/archive) need fresh fixtures each pass. The plan doesn't yet provision them; for now run destructive tests against a folder you don't mind churning, or skip and confirm via the diagnostic console reads.
-- **Phase 3.5 gap**: list-scope toolbar shortcuts (mark-read/unread/move-to-X) require selection in the DOM. Until P3.5 lands keyboard-driven row selection, the plan must click the row checkbox first via `click_by_uid`. After P3.5, that click is replaced with `press_key({ key: "x" })` (or whatever the toggleSelect default ends up being).
-- **2FA / CAPTCHA on first sign-in**: not in scope. The plan assumes a profile where the Proton session is already established and persisted.
-- **Cross-browser**: this plan runs Firefox via the firefox-devtools MCP. A Chrome equivalent needs a Chrome MCP or a Playwright bridge — out of scope until Phase 5.
-- **Modifier key naming**: `press_key` accepts `meta` for the platform "command" key on macOS and `ctrl` on Linux/Windows. Our bindings register both (`command+enter, ctrl+enter`); pick the modifier that matches the test machine.
+- **2FA / CAPTCHA on first sign-in**: not in scope. The plan assumes a profile where the Proton session is already established. On Firefox MCP this happens once and persists; on Chrome MCP it must be redone each session unless `--userDataDir` is configured.
+- **Modifier key naming**: see the table at the top of this doc — Firefox MCP uses hotkeys-js syntax (`command+enter`, `ctrl+a`), Chrome MCP uses DevTools convention (`Meta+Enter`, `Control+A`). Our bindings register both `command+enter, ctrl+enter` so Linux + macOS both work; pick the modifier the MCP expects, not the one the binding uses.
 - **Snapshot scoping is selector-dependent.** When the scope selector itself disappears or changes (Proton ships a UI update), snapshots fail to capture anything — that's a *test-infra* failure, not a shortcut failure. The selector probe (DESIGN.md §3.6) is what catches that on the runtime side; the test plan inherits the same fragility.
+- **Page-render race after `navigate_page`**: the compose button (and other top-frame DOM) may not be in the DOM the moment navigation resolves. Pressing `n` immediately after `navigate_page` can miss; if `dispatch compose` fires but the warn says "selector did not resolve", press `n` again after taking a snapshot to confirm DOM is settled. Same applies to other navigation-then-shortcut chains.
