@@ -57,14 +57,21 @@ Exit criteria: user can rebind any action and have it take effect without reload
 - [x] **Wire "Restore defaults" button.** Single button at bottom. Confirms before clearing user overrides. Writes default bindings back to storage; `storage.onChanged` triggers content-script rebind.
 - [x] **Verify live rebind without tab reload.** Change a binding in Options, switch to Proton tab, confirm new binding fires immediately and old one no longer does. Verifies `storage.onChanged` → engine re-registration path.
 
-## Phase 5 — Test + ship
+## Phase 5 — Ship
 
-Exit criteria: nightly green, both browsers verified, listing copy reviewed for the branding rule.
+Exit criteria: both browsers verified end-to-end, listing copy reviewed for the branding rule, store listings live (or ready to submit).
 
-- [ ] **Set up Vitest + unit tests (engine, registry, storage).** Per §6.1. Configure with happy-dom. Cover engine (scope transitions, sequences, conflict detection, contenteditable filter), registry (lookup-by-scope, missing-action), storage (migration, default merge, change events).
+- [ ] **Verify Firefox parity end-to-end.** Walk the full action list manually against the Firefox build on a real account. Catches any `browser.*` polyfill edge cases or manifest-template gaps that the Phase-3 MCP run didn't exercise.
+- [ ] **Prepare store listing (icons, screenshots, copy review).** Generate icon set at sizes required by Chrome Web Store and AMO. Capture Options-page and shortcut-in-action screenshots. Write the listing description; review for the PRD branding rule that no copy implies the extension is official. Restore the full "Unofficial Proton Mail Keyboard Shortcuts Extension" name in store listings (manifest is shortened to fit AMO's 45-char cap). Add `browser_specific_settings.gecko.data_collection_permissions` to the Firefox manifest (web-ext lint flags it as a future-required key).
+
+## Phase 6 — Test + CI
+
+Durable verification that catches regressions before they reach users. Doesn't gate Phase 5 — the matrix-driven verification in TEST_MATRIX.md / TEST_PLAN.md already proves correctness for v1; this phase locks it in.
+
+Exit criteria: nightly CI green; per-PR pipeline runs lint + unit + a smoke E2E subset; selector-smoke failures open an issue automatically.
+
+- [ ] **Set up Vitest + unit tests (engine, registry, storage).** Per DESIGN.md §6.1. Configure with happy-dom. Cover engine (scope transitions, sequences, conflict detection, contenteditable filter), registry (lookup-by-scope, missing-action), storage (migration, default merge, change events).
 - [ ] **Commit sanitized HTML fixtures + selector unit tests.** Per §6.1. Capture HTML snapshots of list / reading / compose from a real session; sanitize PII; commit under `tests/fixtures/`. Selector unit tests assert each named selector resolves against its fixture.
 - [ ] **Set up Playwright with extension loading + persisted auth.** Per §6.3. Launch Chromium and Firefox with the built extension. Persist logged-in storage state between runs to dodge CAPTCHA. Credentials via `PROTON_USER` / `PROTON_PASS` env vars, never committed. Document the manual-refresh procedure when state expires.
 - [ ] **Implement @smoke (~10 actions) and @full E2E suites.** Per §6.3. `@smoke` runs on every PR; `@full` covers every action and runs nightly. Each test fires a shortcut and asserts the resulting DOM transition. Setup creates fresh fixture messages via Proton's web UI.
 - [ ] **Wire CI pipelines.** Per §6.2/§6.3. PR pipeline: lint + unit + `@smoke` E2E in Chromium. Nightly: selector smoke (canary for Proton DOM changes) + `@full` E2E in both Chromium and Firefox. Selector-smoke failures auto-open an issue.
-- [ ] **Verify Firefox parity end-to-end.** Run the full action list manually against the Firefox build on a real account. Catches any `browser.*` polyfill edge cases or manifest-template gaps that unit/E2E missed.
-- [ ] **Prepare store listing (icons, screenshots, copy review).** Generate icon set at sizes required by Chrome Web Store and AMO. Capture Options-page and shortcut-in-action screenshots. Write the listing description; review for the PRD branding rule that no copy implies the extension is official.
