@@ -1,5 +1,13 @@
 node_modules/
-dist/
+# Build output is gitignored, with two exceptions:
+#   - dist/release/screenshot-*.png are store-listing assets and stay in git
+#     so the GitHub repo + AMO/Chrome submissions reference the same files.
+#   - The rest of dist/ (per-target builds, zip/xpi packages) is regenerated
+#     by `npm run build` + the packaging recipe and isn't worth committing.
+dist/chrome/
+dist/firefox/
+dist/release/*
+!dist/release/screenshot-*.png
 .env
 .env.*
 !.env.example
