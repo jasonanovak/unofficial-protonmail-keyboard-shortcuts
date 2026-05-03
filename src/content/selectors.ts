@@ -144,6 +144,28 @@ export const nextMessageButton = (): HTMLElement | null =>
   query('[data-testid="toolbar:next-element"]') ??
   findByAriaLabel(/next (message|conversation)/i);
 
+// ─── Modal detection ─
+// Returns true if any Proton modal/dialog is currently visible. Used by the
+// canFire gates on compose-scope shortcuts so that, for example, pressing
+// Esc while the Insert Link modal is open closes the modal (Proton's own
+// handler) rather than the entire composer.
+//
+// Proton's `ModalTwo` component (the standard modal as of 2026-05-02) uses
+// `.modal-two-backdrop--in` for the visible state — no role="dialog" or
+// aria-modal attribute. The bare `.modal-two-backdrop` (without --in)
+// LINGERS in the DOM after the modal closes, so we must only match the
+// --in modifier. ARIA selectors are forward-compat fallbacks.
+
+const MODAL_SELECTOR =
+  '.modal-two-backdrop--in, [role="dialog"], [aria-modal="true"]';
+
+export function isModalOpen(): boolean {
+  for (const doc of candidateDocuments()) {
+    if (doc.querySelector(MODAL_SELECTOR)) return true;
+  }
+  return false;
+}
+
 // ─── Composer ─
 
 export const composerSendButton = (): HTMLElement | null =>
@@ -224,6 +246,7 @@ export const starredLink = sidebarLink("starred");
 export const allMailLink = sidebarLink("almost-all-mail", "all-mail");
 
 export const selectors = {
+  isModalOpen,
   listRows,
   focusedListRow,
   rowCheckbox,

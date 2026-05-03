@@ -28,7 +28,13 @@ export type Binding = {
 };
 
 export type EngineDeps = {
-  dispatch: (actionId: string) => void;
+  /**
+   * Dispatch the action. Returns true if it actually fired; false if it was
+   * gated (e.g. by an action's canFire predicate). When false is returned,
+   * the engine does NOT consume the keystroke, so it propagates to whatever
+   * handler the user actually wanted (e.g. a sub-modal's own Esc handler).
+   */
+  dispatch: (actionId: string) => boolean;
 };
 
 type SequenceStep = {
@@ -123,8 +129,9 @@ export class KeybindingEngine {
         if (!allowsEditableTarget && isEditableTarget(event.target)) {
           return; // let the keystroke continue to the focused input
         }
+        const fired = this.deps.dispatch(b.actionId);
+        if (!fired) return; // canFire said no — don't consume the keystroke
         event.preventDefault();
-        this.deps.dispatch(b.actionId);
         return false;
       });
     }
@@ -185,6 +192,8 @@ export class KeybindingEngine {
       this.clearWaiting();
       if (match) {
         if (!match.allowsEditable && isEditableTarget(event.target)) return;
+        const fired = this.deps.dispatch(match.actionId);
+        if (!fired) return; // canFire said no — let the keystroke through
         event.preventDefault();
         // stopImmediatePropagation, not stopPropagation: hotkeys-js attaches
         // its keydown listener to the same document in the same capture
@@ -193,7 +202,6 @@ export class KeybindingEngine {
         // key in a sequence (e.g. `a` after `g`) ALSO fires its single-key
         // binding, dispatching both `goto.archive` and `archive`.
         event.stopImmediatePropagation();
-        this.deps.dispatch(match.actionId);
       }
       // If no match, fall through — let hotkeys-js process the second key.
       return;

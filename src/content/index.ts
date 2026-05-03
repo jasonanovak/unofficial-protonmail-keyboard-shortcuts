@@ -52,7 +52,7 @@ async function main() {
   const engine = new KeybindingEngine({
     dispatch: (id) => {
       console.debug(LOG_PREFIX, "dispatch", id);
-      registry.dispatch(id);
+      return registry.dispatch(id);
     },
   });
   engine.setBindings(effectiveBindings(registry.all(), settings));

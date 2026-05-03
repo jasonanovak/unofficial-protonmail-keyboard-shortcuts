@@ -276,11 +276,15 @@ export const ALL_ACTIONS: Action[] = [
   },
 
   // ── Composing ───────────────────────────────────────────────────────────
+  // canFire: !isModalOpen — when a sub-modal (e.g. Insert Link) is open,
+  // defer Esc / Ctrl+Enter / Ctrl+K to the modal's own handler instead of
+  // closing the whole composer or sending mail mid-link-edit.
   {
     id: "compose.close",
     label: "Close composer",
     scopes: ["composing"],
     defaultBinding: "escape",
+    canFire: () => !selectors.isModalOpen(),
     run: ({ actionId }) => clickOrWarn(actionId, selectors.composerCloseButton()),
   },
   {
@@ -288,6 +292,7 @@ export const ALL_ACTIONS: Action[] = [
     label: "Send",
     scopes: ["composing"],
     defaultBinding: "command+enter, ctrl+enter",
+    canFire: () => !selectors.isModalOpen(),
     run: ({ actionId }) => clickOrWarn(actionId, selectors.composerSendButton()),
   },
   {
@@ -295,6 +300,7 @@ export const ALL_ACTIONS: Action[] = [
     label: "Insert link",
     scopes: ["composing"],
     defaultBinding: "command+k, ctrl+k",
+    canFire: () => !selectors.isModalOpen(),
     run: ({ actionId }) =>
       clickOrWarn(actionId, selectors.editorInsertLinkButton()),
   },

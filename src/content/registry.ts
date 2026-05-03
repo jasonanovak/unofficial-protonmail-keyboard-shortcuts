@@ -16,6 +16,13 @@ export type Action = {
   defaultBinding: string;
   label: string;
   run: (ctx: ActionContext) => void;
+  /**
+   * Optional gate. Returning false aborts the dispatch BEFORE the engine
+   * calls preventDefault/stopPropagation, so the keystroke continues to
+   * its natural handler. Used by compose-scope shortcuts to defer Esc /
+   * Ctrl+Enter / Ctrl+K to an open sub-modal's own handler.
+   */
+  canFire?: (ctx: ActionContext) => boolean;
 };
 
 export class ActionRegistry {
@@ -46,16 +53,26 @@ export class ActionRegistry {
     );
   }
 
-  dispatch(actionId: string): void {
+  /**
+   * Returns true if the action fired, false if it was unknown, gated by its
+   * canFire predicate, or threw. Callers (the engine) use the return value to
+   * decide whether to consume the keystroke (preventDefault + stopPropagation).
+   */
+  dispatch(actionId: string): boolean {
     const action = this.byId.get(actionId);
     if (!action) {
       console.warn("[upmks] dispatch: unknown action", actionId);
-      return;
+      return false;
+    }
+    if (action.canFire && !action.canFire({ actionId })) {
+      return false;
     }
     try {
       action.run({ actionId });
+      return true;
     } catch (err) {
       console.error("[upmks] action threw", actionId, err);
+      return false;
     }
   }
 }
