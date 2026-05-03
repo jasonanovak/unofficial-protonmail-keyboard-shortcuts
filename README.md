@@ -115,7 +115,7 @@ The codebase is intentionally small and unframeworked: TypeScript + esbuild + a 
 - **[CLAUDE.md](CLAUDE.md)** — orientation for new contributors (and AI assistants); also a notebook of non-obvious debugging lessons (the rooster compose iframe wipe, hotkeys-js's lack of sequence support, scope detection across frames, …).
 - **[TODO.md](TODO.md)** — phased task list with checked-off and pending items.
 - **[TEST_MATRIX.md](TEST_MATRIX.md)** — manual verification checklist.
-- **[TEST_PLAN.md](TEST_PLAN.md)** — automated verification via the `firefox-devtools` MCP server. Requires the [`inputsimulation` fork](https://github.com/jasonanovak/firefox-devtools-mcp/tree/inputsimulation), which adds the `press_key` tool the plan depends on; upstream `firefox-devtools-mcp` does not include it.
+- **[TEST_PLAN.md](TEST_PLAN.md)** — interactive verification via either the `firefox-devtools` or `chrome-devtools` MCP server. The Firefox path requires the [`inputsimulation` fork of firefox-devtools-mcp](https://github.com/jasonanovak/firefox-devtools-mcp/tree/inputsimulation) (upstream lacks the `press_key` tool the plan depends on). The Chrome path requires `chrome-devtools-mcp` started with the `--categoryExtensions` flag (default-disabled).
 
 ## License
 
