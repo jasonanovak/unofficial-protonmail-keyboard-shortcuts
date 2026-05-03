@@ -51,11 +51,11 @@ Closes the "click first, then shortcut works" gap surfaced in the Phase 3 test m
 
 Exit criteria: user can rebind any action and have it take effect without reloading.
 
-- [ ] **Build Options page UI.** Per §3.8. Sections per scope (Global / Message list / Reading / Composing). Each row: action label, current-binding chip, Edit button. Top banner reminds user to disable Proton native shortcuts.
-- [ ] **Implement record-mode keystroke capture.** Use hotkeys-js record mode (or equivalent) to capture the next keystroke / sequence after Edit is clicked. Display captured keys live; allow cancel.
-- [ ] **Validate uniqueness within scope on rebind.** Inline error if the key is already taken in the same scope; refuse the save. Keys may be reused across non-overlapping scopes.
-- [ ] **Wire "Restore defaults" button.** Single button at bottom. Confirms before clearing user overrides. Writes default bindings back to storage; `storage.onChanged` triggers content-script rebind.
-- [ ] **Verify live rebind without tab reload.** Change a binding in Options, switch to Proton tab, confirm new binding fires immediately and old one no longer does. Verifies `storage.onChanged` → engine re-registration path.
+- [x] **Build Options page UI.** Per §3.8. Sections per scope (Global / Message list / Reading / Composing). Each row: action label, current-binding chip, Edit button. Top banner reminds user to disable Proton native shortcuts.
+- [x] **Implement record-mode keystroke capture.** Use hotkeys-js record mode (or equivalent) to capture the next keystroke / sequence after Edit is clicked. Display captured keys live; allow cancel.
+- [x] **Validate uniqueness within scope on rebind.** Inline error if the key is already taken in the same scope; refuse the save. Keys may be reused across non-overlapping scopes.
+- [x] **Wire "Restore defaults" button.** Single button at bottom. Confirms before clearing user overrides. Writes default bindings back to storage; `storage.onChanged` triggers content-script rebind.
+- [x] **Verify live rebind without tab reload.** Change a binding in Options, switch to Proton tab, confirm new binding fires immediately and old one no longer does. Verifies `storage.onChanged` → engine re-registration path.
 
 ## Phase 5 — Test + ship
 

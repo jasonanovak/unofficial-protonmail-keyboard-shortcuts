@@ -12,6 +12,11 @@
 
 import hotkeys from "hotkeys-js";
 import type { Scope } from "./scope-detector.js";
+import {
+  MODIFIER_KEYS,
+  canonicalKey,
+  isEditableTarget,
+} from "../key-syntax.js";
 
 const ALL_SCOPES: ReadonlyArray<Scope> = ["global", "list", "reading", "composing"];
 const SEQUENCE_TIMEOUT_MS = 1000;
@@ -37,16 +42,6 @@ function expandScopes(scopes: Scope[]): Scope[] {
   return scopes.includes("global") ? [...ALL_SCOPES] : scopes;
 }
 
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  if (target.isContentEditable) return true;
-  const tag = target.tagName;
-  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
-    return !(target as HTMLInputElement).readOnly;
-  }
-  return false;
-}
-
 function isSequence(keys: string): boolean {
   // A binding is a sequence only if any single comma-separated variant
   // contains whitespace. "command+a, ctrl+a" is two single-key alternatives,
@@ -65,33 +60,6 @@ function parseSequence(keys: string): { prefix: string; second: string } | null 
   return { prefix, second };
 }
 
-const MODIFIER_KEYS = new Set(["Shift", "Control", "Alt", "Meta"]);
-
-// Convert a KeyboardEvent into the same syntax hotkeys-js would parse, so a
-// stored binding "shift+8" matches an event with shiftKey + code === "Digit8".
-// Letter and digit keys use event.code (location-based) to match hotkeys-js's
-// keyCode-based behavior. Everything else falls back to event.key lowercase.
-function canonicalKey(event: KeyboardEvent): string {
-  const parts: string[] = [];
-  if (event.shiftKey) parts.push("shift");
-  if (event.ctrlKey) parts.push("ctrl");
-  if (event.altKey) parts.push("alt");
-  if (event.metaKey) parts.push("command");
-
-  // Proton's `useBubbleIframeEvents` re-dispatches synthesized KeyboardEvents
-  // into the parent and doesn't set `code` on them, so guard against undefined.
-  const code = event.code ?? "";
-  let main: string;
-  if (code.startsWith("Key")) {
-    main = code.slice(3).toLowerCase();
-  } else if (code.startsWith("Digit")) {
-    main = code.slice(5);
-  } else {
-    main = (event.key ?? "").toLowerCase();
-  }
-  parts.push(main);
-  return parts.join("+");
-}
 
 export class KeybindingEngine {
   private bindings: Binding[] = [];
