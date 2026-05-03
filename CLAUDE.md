@@ -110,10 +110,19 @@ The `LABEL_IDS_TO_HUMAN` map in `WebClients/packages/shared/lib/mail/constants.t
 Don't write URL pattern matches that assume `/inbox` is at the root — Proton uses `/u/0/inbox` etc. for multi-account routing. An early scope-detector regex assumed bare paths and missed the prefix.
 
 ### Toolbar action buttons require selection
-The `toolbar:read`, `toolbar:unread`, `toolbar:movetotrash`, etc. buttons are not in the DOM until at least one message is selected. Pressing the corresponding shortcut dispatches correctly but the selector returns `null` and we warn. This is workflow-dependent, not a code bug. Phase 3.5 closes the gap with keyboard-driven row focus + selection.
+The `toolbar:read`, `toolbar:unread`, `toolbar:movetotrash`, etc. buttons are not in the DOM until at least one message is selected. Pressing the corresponding shortcut dispatches correctly but the selector returns `null` and we warn. Phase 3.5's `list.toggleSelect` (`x`) closes this — the user navigates with `down`/`up`, selects with `x`, then the toolbar buttons appear and `r` / `u` / `t` / `s` / `a` / `i` work.
 
 ### Star icons are per-row
-`item-star-true` / `item-star-false` testids are per-row in the message list. With nothing focused, `querySelector` returns the first match — which is the first row's star, not "the message I meant." Like the toolbar buttons, this becomes correct once Phase 3.5's focused-row tracker lands.
+`item-star-true` / `item-star-false` testids are per-row in the message list. With nothing focused, `querySelector` returns the first match — which is the first row's star, not "the message I meant." The `star` action checks `selectors.focusedListRow()` first and uses `selectors.rowStar(row)` on the focused row when one is focused; it falls back to the message-view star for reading scope.
+
+### List rows are natively focusable; Proton uses browser `:focus`
+Each row is `<div role="region" tabindex="0" data-shortcut-target="item-container" data-element-id="...">`. There is no dedicated "focused row" class — Proton relies on browser `:focus` / `document.activeElement`. Our `selectors.focusedListRow()` does `document.activeElement.closest('[data-shortcut-target="item-container"]')`, and our nav actions just call `.focus()` on the desired row. No internal focus tracker is needed.
+
+### `item-is-selected` ≠ keyboard focus
+The `item-is-selected` class on a row means "this row's message is open in the reading pane," NOT "this row is the keyboard cursor." Don't conflate them. Browser `:focus` is the right signal for which row a list-scope shortcut should act on.
+
+### Row checkbox is positioned absolutely over the avatar
+Each row's `input[data-testid="item-checkbox"][data-item-id]` has class `item-checkbox absolute inset-0 cursor-pointer m-0` — it covers the row's avatar element with `z-index` above the avatar. This is why `click_by_uid` on the visible avatar fails with "another element ... obscures it." Programmatic `.click()` on the input itself toggles Proton's React selection state correctly. The bulk-select toolbar label ("Select all messages" / "Deselect all messages") only flips when *all* rows are selected — don't use it as a "is anything selected" check.
 
 ## Development workflow
 
