@@ -68,11 +68,12 @@ function focusListRowDelta(actionId: string, delta: number): void {
   target.scrollIntoView({ block: "nearest" });
 }
 
-// Folder navigation goes through URL assignment, not sidebar clicks. Proton
-// collapses Archive / Spam / Trash / All Mail behind a "More" toggle when
-// folder lists get long, so the sidebar links aren't always present in the
-// DOM. Navigating to /u/<n>/<humanId> works regardless of sidebar state and
-// preserves the user's account prefix.
+// Folder navigation: prefer clicking the sidebar <a>, which Proton's React
+// Router intercepts for client-side navigation (instant). Fall back to URL
+// assignment when the link isn't in the DOM — Proton collapses Archive /
+// Spam / Trash / All Mail behind a "More" toggle when folder lists get
+// long. URL assignment works regardless of sidebar state but triggers a
+// full SPA reload, so it's the slower path.
 function topWindow(): Window {
   try {
     return window.top ?? window;
@@ -94,12 +95,20 @@ const navigateToFolder = (
   label: string,
   binding: string,
   humanId: string,
+  link: () => HTMLElement | null,
 ): Action => ({
   id,
   label,
   scopes: ["global"],
   defaultBinding: binding,
-  run: () => navigateToFolderPath(humanId),
+  run: () => {
+    const sidebarEl = link();
+    if (sidebarEl) {
+      sidebarEl.click();
+      return;
+    }
+    navigateToFolderPath(humanId);
+  },
 });
 
 export const ALL_ACTIONS: Action[] = [
@@ -111,17 +120,17 @@ export const ALL_ACTIONS: Action[] = [
     defaultBinding: "n",
     run: ({ actionId }) => clickOrWarn(actionId, selectors.composeButton()),
   },
-  navigateToFolder("goto.inbox", "Go to Inbox", "g i", "inbox"),
-  navigateToFolder("goto.drafts", "Go to Drafts", "g d", "drafts"),
-  navigateToFolder("goto.sent", "Go to Sent", "g e", "sent"),
-  navigateToFolder("goto.archive", "Go to Archive", "g a", "archive"),
-  navigateToFolder("goto.spam", "Go to Spam", "g s", "spam"),
-  navigateToFolder("goto.trash", "Go to Trash", "g t", "trash"),
+  navigateToFolder("goto.inbox", "Go to Inbox", "g i", "inbox", selectors.inboxLink),
+  navigateToFolder("goto.drafts", "Go to Drafts", "g d", "drafts", selectors.draftsLink),
+  navigateToFolder("goto.sent", "Go to Sent", "g e", "sent", selectors.sentLink),
+  navigateToFolder("goto.archive", "Go to Archive", "g a", "archive", selectors.archiveLink),
+  navigateToFolder("goto.spam", "Go to Spam", "g s", "spam", selectors.spamLink),
+  navigateToFolder("goto.trash", "Go to Trash", "g t", "trash", selectors.trashLink),
   // hotkeys-js treats `*` as the "any key" wildcard, not the literal
   // asterisk, so we use `shift+8` (the US-layout chord that produces `*`).
   // EU layouts can rebind via the Options page once Phase 4 ships.
-  navigateToFolder("goto.starred", "Go to Starred", "g shift+8", "starred"),
-  navigateToFolder("goto.allMail", "Go to All Mail", "g m", "all-mail"),
+  navigateToFolder("goto.starred", "Go to Starred", "g shift+8", "starred", selectors.starredLink),
+  navigateToFolder("goto.allMail", "Go to All Mail", "g m", "all-mail", selectors.allMailLink),
 
   // ── Message list ────────────────────────────────────────────────────────
   {

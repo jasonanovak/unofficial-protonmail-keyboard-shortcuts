@@ -1,6 +1,6 @@
 {
   "name": "unofficial-protonmail-keyboard-shortcuts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Unofficial Proton Mail Keyboard Shortcuts Extension — customizable, view-consistent keyboard shortcuts for the Proton Mail web client.",
   "license": "MIT",
