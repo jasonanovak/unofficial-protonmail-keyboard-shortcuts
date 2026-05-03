@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Unofficial Proton Mail Keyboard Shortcuts</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <h1>Unofficial Proton Mail Keyboard Shortcuts</h1>
+        <p class="subtitle">
+          Customizable keyboard shortcuts for the Proton Mail web client.
+          Not affiliated with Proton AG.
+        </p>
+      </header>
+
+      <section class="banner" role="note">
+        <strong>Before you start:</strong>
+        disable Proton's built-in shortcuts in Proton Mail
+        <em>Settings → General → Shortcuts</em>. This extension assumes they're
+        off and may double-fire if they aren't.
+      </section>
+
+      <section id="diagnostics" class="diagnostics" hidden></section>
+
+      <section class="bindings">
+        <h2>Shortcuts</h2>
+        <div id="bindings-root">
+          <p class="placeholder">Loading…</p>
+        </div>
+      </section>
+
+      <footer>
+        <p class="version">Version <span id="version">0.0.0</span></p>
+      </footer>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

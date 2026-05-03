@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Unofficial Proton Mail Keyboard Shortcuts",
+  "version": "0.0.0",
+  "description": "Customizable, view-consistent keyboard shortcuts for the Proton Mail web client. Unofficial — not affiliated with Proton AG.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://mail.proton.me/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://mail.proton.me/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "$browser_overrides": {
+    "comment": "Build script applies these to the per-target manifest. Removed from final output.",
+    "firefox": {
+      "browser_specific_settings": {
+        "gecko": {
+          "id": "unofficial-protonmail-keyboard-shortcuts@unofficial.local",
+          "strict_min_version": "109.0"
+        }
+      }
+    },
+    "chrome": {}
+  }
+}
