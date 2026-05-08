@@ -20,7 +20,7 @@ v0.0.2 — shipping. The shortcut engine, default bindings, keyboard-driven row 
 ## Install
 
 - **Chrome / Brave / Edge / other Chromium browsers:** [install from the Chrome Web Store](https://chromewebstore.google.com/detail/unofficial-proton-mail-ke/cjnnfepjddciaihefijgjhlmnfkmbncb).
-- **Firefox:** AMO submission is in review. Until it's listed, install from source as below.
+- **Firefox:** [install from Firefox Browser Add-Ons](https://addons.mozilla.org/en-US/firefox/addon/upmks/).
 
 After installing, open <https://mail.proton.me>, sign in, and **turn off Proton's built-in shortcuts** in *Settings → General → Keyboard shortcuts*. The extension assumes the natives are off; if they're on, both will fire and most shortcuts will misbehave.
 
