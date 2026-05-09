@@ -33,4 +33,12 @@ body.popup .binding-row {
 
 body.popup .actions {
   margin-top: 12px;
+  padding: 0 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+body.popup .actions .version {
+  color: var(--muted);
+  font-size: 12px;
 }
