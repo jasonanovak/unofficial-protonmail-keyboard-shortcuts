@@ -35,8 +35,15 @@
             "required": ["none"]
           }
         }
+      },
+      "background": {
+        "scripts": ["background.js"]
       }
     },
-    "chrome": {}
+    "chrome": {
+      "background": {
+        "service_worker": "background.js"
+      }
+    }
   }
 }

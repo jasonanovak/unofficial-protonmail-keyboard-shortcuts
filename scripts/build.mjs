@@ -62,6 +62,7 @@ function esbuildOptions(outDir) {
     entryPoints: {
       content: resolve(SRC, "content/index.ts"),
       options: resolve(SRC, "options/options.ts"),
+      background: resolve(SRC, "background/index.ts"),
     },
     outdir: outDir,
     bundle: true,
