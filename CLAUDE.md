@@ -13,6 +13,7 @@ Branding constraint from the PRD: never imply the extension is official. The wor
 - `npm run build` — emits `dist/chrome/` and `dist/firefox/` from the same source.
 - `npm run build:chrome` / `npm run build:firefox` — single-target builds.
 - `npm run watch` — esbuild watch mode for both targets.
+- `npm run package` — builds fresh, then zips each target into store-ready artifacts under `dist/release/` (`upmks-chrome-<version>.zip`, `upmks-firefox-<version>.xpi`). Source maps and `.LEGAL.txt` files are excluded. The version comes from `package.json`. See "Cutting a release" below.
 - `npm run typecheck` — `tsc --noEmit`.
 - `npm run lint` — ESLint over `src/` and `scripts/`. The config bans `chrome.*` outside the polyfill (use `browser.*` from `webextension-polyfill`).
 - `npm run lint:firefox` — `web-ext lint dist/firefox`. Useful before submitting to AMO.
@@ -21,6 +22,19 @@ Branding constraint from the PRD: never imply the extension is official. The wor
 Loading during dev:
 - Chrome: `chrome://extensions` → Developer mode → Load unpacked → `dist/chrome/`.
 - Firefox: `about:debugging` → This Firefox → Load Temporary Add-on → `dist/firefox/manifest.json`.
+
+## Cutting a release
+
+Current shipped version: **0.0.4** (Chrome Web Store + AMO). This is the first published build that includes the toolbar popup editor — 0.0.3 and earlier shipped without it.
+
+The version lives in two places that must stay in sync: `package.json` and `src/manifest.template.json`. The build copies the template version into both per-target manifests; `npm run package` reads the package.json version for artifact filenames. If they disagree, the manifest version and the filename will too.
+
+1. Bump the version in **both** `package.json` and `src/manifest.template.json`.
+2. `npm run package` — emits `dist/release/upmks-chrome-<version>.zip` and `upmks-firefox-<version>.xpi`.
+3. Commit the bump (message style: `Bump version to <version>`). `dist/` is gitignored, so the artifacts themselves aren't committed — they're upload-only.
+4. Upload `.zip` to the Chrome Web Store and `.xpi` to AMO. `npm run lint:firefox` against `dist/firefox` before the AMO upload catches the common rejections.
+
+Packaging only zips what `npm run build` already emitted, so a stale `dist/` ships stale code. `npm run package` runs the build first to avoid this; don't zip `dist/` by hand. (This is the same class of bug as a packaged 0.0.3 that predated the popup feature — the artifacts lagged the source.)
 
 ## Sibling reference checkouts
 
