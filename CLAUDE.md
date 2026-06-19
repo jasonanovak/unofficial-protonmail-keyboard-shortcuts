@@ -25,6 +25,8 @@ Loading during dev:
 
 ## Cutting a release
 
+Current shipped version: **0.0.4** (Chrome Web Store + AMO). This is the first published build that includes the toolbar popup editor — 0.0.3 and earlier shipped without it.
+
 The version lives in two places that must stay in sync: `package.json` and `src/manifest.template.json`. The build copies the template version into both per-target manifests; `npm run package` reads the package.json version for artifact filenames. If they disagree, the manifest version and the filename will too.
 
 1. Bump the version in **both** `package.json` and `src/manifest.template.json`.
