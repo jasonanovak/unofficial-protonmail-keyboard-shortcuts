@@ -15,11 +15,16 @@ This extension fixes both. Shortcuts are dispatched consistently across views (m
 
 ## Status
 
-Pre-release. The shortcut engine, default bindings, and Phase 1–3 verification are done. The rebinding UI (Phase 4), keyboard-driven message selection (Phase 3.5), and the test/CI/store-listing milestones (Phase 5) are open. See [TODO.md](TODO.md) for the full task list.
+v0.0.2 — shipping. The shortcut engine, default bindings, keyboard-driven row navigation, the rebinding UI, and cross-browser verification (Phases 1–5) are all done. The remaining milestone is automated test/CI infrastructure (Phase 6); see [TODO.md](TODO.md) for detail.
 
-Not on the Chrome Web Store or AMO yet — install from source as below.
+## Install
 
-## Install (development build)
+- **Chrome / Brave / Edge / other Chromium browsers:** [install from the Chrome Web Store](https://chromewebstore.google.com/detail/unofficial-proton-mail-ke/cjnnfepjddciaihefijgjhlmnfkmbncb).
+- **Firefox:** [install from Firefox Browser Add-Ons](https://addons.mozilla.org/en-US/firefox/addon/upmks/).
+
+After installing, open <https://mail.proton.me>, sign in, and **turn off Proton's built-in shortcuts** in *Settings → General → Keyboard shortcuts*. The extension assumes the natives are off; if they're on, both will fire and most shortcuts will misbehave.
+
+## Install from source (development build)
 
 ```
 git clone git@github.com:jasonanovak/unofficial-protonmail-keyboard-shortcuts.git
@@ -28,18 +33,14 @@ npm install
 npm run build
 ```
 
-This emits `dist/chrome/` and `dist/firefox/`.
-
-Load unpacked:
+This emits `dist/chrome/` and `dist/firefox/`. Load unpacked:
 
 - **Chrome** — `chrome://extensions` → enable Developer mode → **Load unpacked** → select `dist/chrome/`.
 - **Firefox** — `about:debugging` → **This Firefox** → **Load Temporary Add-on…** → select `dist/firefox/manifest.json`.
 
-Then open <https://mail.proton.me>, sign in, and **turn off Proton's built-in shortcuts** in *Settings → General → Keyboard shortcuts*. The extension assumes the natives are off; if they're on, both will fire and most shortcuts will misbehave.
-
 ## Default shortcuts
 
-These match Proton's documented defaults (reconciled against the live WebClients source). All are customizable via the Options page once Phase 4 ships; for now the defaults are what you get.
+These match Proton's documented defaults (reconciled against the live WebClients source). Any binding can be remapped from the extension's Options page (open it from the browser's extensions manager, or right-click the extension's toolbar icon → *Options*).
 
 **Global** (work anywhere in mail.proton.me)
 

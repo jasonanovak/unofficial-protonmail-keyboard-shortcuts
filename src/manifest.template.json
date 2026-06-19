@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Unofficial Proton Mail Keyboard Shortcuts",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "Customizable, view-consistent keyboard shortcuts for the Proton Mail web client. Unofficial — not affiliated with Proton AG.",
   "permissions": ["storage"],
   "host_permissions": ["https://mail.proton.me/*"],
@@ -17,6 +17,16 @@
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true
+  },
+  "action": {
+    "default_title": "Unofficial Proton Mail Keyboard Shortcuts",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
   },
   "icons": {
     "16": "icons/icon-16.png",
@@ -35,8 +45,15 @@
             "required": ["none"]
           }
         }
+      },
+      "background": {
+        "scripts": ["background.js"]
       }
     },
-    "chrome": {}
+    "chrome": {
+      "background": {
+        "service_worker": "background.js"
+      }
+    }
   }
 }

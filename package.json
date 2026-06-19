@@ -1,6 +1,6 @@
 {
   "name": "unofficial-protonmail-keyboard-shortcuts",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "private": true,
   "description": "Unofficial Proton Mail Keyboard Shortcuts Extension — customizable, view-consistent keyboard shortcuts for the Proton Mail web client.",
   "license": "MIT",
@@ -10,6 +10,7 @@
     "build:chrome": "node scripts/build.mjs --target=chrome",
     "build:firefox": "node scripts/build.mjs --target=firefox",
     "watch": "node scripts/build.mjs --watch",
+    "package": "npm run build && node scripts/package.mjs",
     "lint": "eslint src scripts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

@@ -1,0 +1,44 @@
+/* Popup-specific overrides. Loaded after options.css so binding-row
+   styling stays identical; this file only retunes the outer page chrome
+   to fit a ~420×580 popup panel. */
+
+body.popup {
+  width: 420px;
+}
+
+body.popup .page {
+  max-width: none;
+  margin: 0;
+  padding: 16px 16px 20px;
+}
+
+body.popup header h1 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+body.popup .scope-section {
+  margin-bottom: 12px;
+}
+
+body.popup .scope-section h3 {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+body.popup .binding-row {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+body.popup .actions {
+  margin-top: 12px;
+  padding: 0 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+body.popup .actions .version {
+  color: var(--muted);
+  font-size: 12px;
+}

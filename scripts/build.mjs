@@ -51,6 +51,8 @@ async function emitManifest(target, outDir) {
 async function copyAssets(outDir) {
   await cp(resolve(SRC, "options/options.html"), resolve(outDir, "options.html"));
   await cp(resolve(SRC, "options/options.css"), resolve(outDir, "options.css"));
+  await cp(resolve(SRC, "popup/popup.html"), resolve(outDir, "popup.html"));
+  await cp(resolve(SRC, "popup/popup.css"), resolve(outDir, "popup.css"));
   const iconsDir = resolve(SRC, "icons");
   if (await exists(iconsDir)) {
     await cp(iconsDir, resolve(outDir, "icons"), { recursive: true });
@@ -62,6 +64,8 @@ function esbuildOptions(outDir) {
     entryPoints: {
       content: resolve(SRC, "content/index.ts"),
       options: resolve(SRC, "options/options.ts"),
+      background: resolve(SRC, "background/index.ts"),
+      popup: resolve(SRC, "popup/popup.ts"),
     },
     outdir: outDir,
     bundle: true,
